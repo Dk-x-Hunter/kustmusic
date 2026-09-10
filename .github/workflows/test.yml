@@ -48,6 +48,25 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Test YouTube Search API
+        run: |
+          python - <<'PY'
+          import requests
+
+          url = "https://search-api.kustbotsweb.workers.dev/search?q=shape%20of%20you"
+
+          try:
+              r = requests.get(url, timeout=20)
+              print("STATUS:", r.status_code)
+              print("CONTENT-TYPE:", r.headers.get("content-type"))
+              print("RESPONSE:")
+              print(r.text[:3000])
+              r.raise_for_status()
+          except Exception as e:
+              print("SEARCH API ERROR:", repr(e))
+              raise
+          PY
+
       - name: Start KustMusic
         run: |
           python main.py
