@@ -7,9 +7,9 @@ on:
       - main
 
 jobs:
-  test:
+  run-bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 360
 
     env:
       API_ID: ${{ secrets.API_ID }}
@@ -37,59 +37,16 @@ jobs:
           curl -fsSL https://deno.land/install.sh | sh
           echo "$HOME/.deno/bin" >> "$GITHUB_PATH"
 
-      - name: Install Python dependencies
+      - name: Check versions
+        run: |
+          python --version
+          ffmpeg -version
+          deno --version
+
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -U yt-dlp requests
-
-      - name: Check installed tools
-        run: |
-          echo "=== Python ==="
-          python --version
-
-          echo "=== yt-dlp ==="
-          yt-dlp --version
-
-          echo "=== FFmpeg ==="
-          ffmpeg -version | head -n 1
-
-          echo "=== Deno ==="
-          deno --version
-
-      - name: Test YouTube Search API
-        run: |
-          python - <<'PY'
-          import requests
-
-          url = "https://search-api.kustbotsweb.workers.dev/search?q=shape%20of%20you"
-
-          print("Testing:", url)
-
-          try:
-              r = requests.get(url, timeout=20)
-
-              print("STATUS:", r.status_code)
-              print("CONTENT-TYPE:", r.headers.get("content-type"))
-              print("RESPONSE:")
-              print(r.text[:3000])
-
-              r.raise_for_status()
-
-          except Exception as e:
-              print("SEARCH API ERROR:", repr(e))
-              raise
-          PY
-
-      - name: Test YouTube Extraction
-        run: |
-          yt-dlp \
-            --extractor-args "youtube:player_client=android,mweb,web" \
-            -f "bestaudio/best" \
-            --no-playlist \
-            --no-warnings \
-            --verbose \
-            "ytsearch1:Shape of You Ed Sheeran"
 
       - name: Start KustMusic
         run: |
